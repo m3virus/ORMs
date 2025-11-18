@@ -1,4 +1,5 @@
 ﻿using RepoDb;
+using Microsoft.Data.Sqlite;
 using System.Data.SQLite;
 
 namespace RepoDBAPI

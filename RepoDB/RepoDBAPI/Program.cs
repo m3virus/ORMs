@@ -1,5 +1,6 @@
 using RepoDb;
 using RepoDBAPI;
+using Microsoft.Data.Sqlite;
 
 public partial class Program
 {
@@ -28,11 +29,16 @@ public partial class Program
             return a.ToString();
         });
 
-        app.MapPost("/Get", async (int id) => {
+        app.MapGet("/Get", async (int id) => {
             var a = (await dataBase.QueryAsync<User>(id));
             return a.ToString();
         });
 
+        app.MapDelete("/Delete", async (int id) =>
+        {
+            var a = await dataBase.DeleteAsync<User>(id);
+            return a.ToString();
+        });
         app.UseHttpsRedirection();
 
         app.UseAuthorization();
