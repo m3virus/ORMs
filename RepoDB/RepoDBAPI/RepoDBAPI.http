@@ -1,6 +1,6 @@
 @RepoDBAPI_HostAddress = http://localhost:5015
 
-GET {{RepoDBAPI_HostAddress}}/weatherforecast/
+GET {{RepoDBAPI_HostAddress}}/Get/1
 Accept: application/json
 
 ###
