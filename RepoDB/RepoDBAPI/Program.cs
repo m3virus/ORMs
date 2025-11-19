@@ -1,9 +1,10 @@
 using RepoDb;
 using RepoDBAPI;
-using Microsoft.Data.Sqlite;
+using Scalar.AspNetCore;
 
 public partial class Program
 {
+    [Obsolete]
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -13,25 +14,37 @@ public partial class Program
         builder.Services.AddControllers();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
-        SQLiteBootstrap.Initialize();
-        IConfiguration config = builder.Configuration;
-        var context = new DbContext(config);
-        using var dataBase = context.AppDbContext;
+        SqliteBootstrap.Initialize();
+        builder.Services.AddScoped<DbContext>();
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
+            app.MapScalarApiReference(options =>
+            {
+                options.WithTitle("My API");
+                options.WithOpenApiRoutePattern("/openapi/v1.json");
+            });
         }
-        app.MapPost("/Insert", async (string x) => {
-            var a = await dataBase.InsertAsync(x);
-            return a.ToString();
+        app.MapPost("/Insert", async (User x, DbContext appdb) => {
+            var db = appdb.AppDbContext;
+            var a = await db.InsertAsync(x);
+            return a;
         });
 
-        app.MapGet("/Get", async (int id) => {
-            var a = (await dataBase.QueryAsync<User>(id));
-            return a.ToString();
+        app.MapGet("/Get/{id}", async (int id, DbContext appdb) => {
+            var db = appdb.AppDbContext;
+            var a = (await db.QueryAsync<User>(id)).FirstOrDefault();
+            return a;
+        });
+
+        app.MapDelete("/Delete/{id}", async (int id, DbContext appdb) =>
+        {
+            var db = appdb.AppDbContext;
+            var a = await db.DeleteAsync<User>(id);
+            return a;
         });
 
         app.MapDelete("/Delete", async (int id) =>

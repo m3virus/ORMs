@@ -1,7 +1,11 @@
-﻿namespace RepoDBAPI
+﻿using RepoDb.Attributes;
+
+namespace RepoDBAPI
 {
+    [Map("Users")]
     public class User
     {
-        int id;
+        public int Id { get; set; }
+        public string Name { get; set; }
     }
 }
