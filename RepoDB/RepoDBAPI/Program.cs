@@ -15,9 +15,7 @@ public partial class Program
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
         SqliteBootstrap.Initialize();
-        IConfiguration config = builder.Configuration;
-        var context = new DbContext(config);
-        using var dataBase = context.AppDbContext;
+        builder.Services.AddScoped<DbContext>();
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -30,20 +28,23 @@ public partial class Program
                 options.WithOpenApiRoutePattern("/openapi/v1.json");
             });
         }
-        app.MapPost("/Insert", async (User x) => {
-            var a = await dataBase.InsertAsync(x);
-            return a.ToString();
-        });
-
-        app.MapGet("/Get/{id}", async (int id) => {
-            var a = (await dataBase.QueryAsync<User>(id)).FirstOrDefault();
+        app.MapPost("/Insert", async (User x, DbContext appdb) => {
+            var db = appdb.AppDbContext;
+            var a = await db.InsertAsync(x);
             return a;
         });
 
-        app.MapDelete("/Delete/{id}", async (int id) =>
+        app.MapGet("/Get/{id}", async (int id, DbContext appdb) => {
+            var db = appdb.AppDbContext;
+            var a = (await db.QueryAsync<User>(id)).FirstOrDefault();
+            return a;
+        });
+
+        app.MapDelete("/Delete/{id}", async (int id, DbContext appdb) =>
         {
-            var a = await dataBase.DeleteAsync<User>(id);
-            return a.ToString();
+            var db = appdb.AppDbContext;
+            var a = await db.DeleteAsync<User>(id);
+            return a;
         });
 
         app.UseHttpsRedirection();
